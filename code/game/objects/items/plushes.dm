@@ -16,7 +16,8 @@
 	var/obj/item/toy/plush/plush_child
 	var/obj/item/toy/plush/paternal_parent	//who initiated creation
 	var/obj/item/toy/plush/maternal_parent	//who owns, see love()
-	var/static/list/breeding_blacklist = typecacheof(/obj/item/toy/plush/carpplushie/dehy_carp) // you cannot have sexual relations with this plush
+///Prevents plushies from having relationships with these plushies.
+	var/static/list/breeding_blacklist = typecacheof(list(/obj/item/toy/plush/carpplushie/dehy_carp, /obj/item/toy/plush/supermatter)) // you cannot have sexual relations with these plushes
 	var/list/scorned	= list()	//who the plush hates
 	var/list/scorned_by	= list()	//who hates the plush, to remove external references on Destroy()
 	var/heartbroken = FALSE
@@ -687,3 +688,23 @@
 		forceMove(random_open_spot)
 	user.dust(just_ash = FALSE, drop_items = TRUE)
 	return MANUAL_SUICIDE
+
+/obj/item/toy/plush/supermatter
+	name = "supermatter plushie"
+	desc = "A stuffed toy of a sliver of the supermatter crystal, with real time delaminating action!"
+	icon = 'icons/obj/nuke_tools.dmi'
+	icon_state = "supermatter_sliver"
+	attack_verb = list("consumed", "dusted", "delaminated")
+	squeak_override = list('sound/effects/supermatter.ogg'=1)
+
+/obj/item/toy/plush/supermatter/suicide_act(mob/living/user)
+	user.visible_message("<span class='suicide'>[user] licks [src]! It looks like [user.p_theyre()] trying to commit supercide!</span>") // let's assume they have a tongue, if not they just stuff it in their mouth or something
+	playsound(src, 'sound/effects/supermatter.ogg', 50, TRUE)
+	to_chat(user, "<span class='userdanger'>As you lick [src], your tongue lights up and burns down into ash, the light spreading to your mouth and then your body as everything you are crumbles into dust. Your last thought is \"I should not have done that.\"</span>")
+	var/list/available_spots = get_adjacent_open_turfs(loc)
+	if(available_spots.len) //Stop squeak spamming. Thanks moth plushie code // Yell at me if you want me to make this a proc in the name of removing copypaste or whatever
+		var/turf/open/random_open_spot = pick(available_spots)
+		forceMove(random_open_spot)
+	user.dust(just_ash = FALSE, drop_items = TRUE) // bye bye
+	flick("[icon_state]_pulse", src) // Look at me i'm so modular
+	return FIRELOSS // You get dusted, equals fire
